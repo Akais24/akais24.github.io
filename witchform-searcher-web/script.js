@@ -157,20 +157,35 @@ document.getElementById('searchForm').addEventListener('submit', async function(
             return;
         }
 
-        // 2단계: 각 폼에서 상품 조회 및 필터링
+        // 2단계: 각 폼에서 상품 조회 및 필터링 (5개씩 병렬 처리)
         resultsContent.innerHTML = '<div class="loading">상품 조회 중...</div>';
         const results = [];
+        const batchSize = 5;
 
-        for (const form of forms) {
-            const products = await fetchProducts(form);
-            const filteredProducts = filterProducts(products, productKeyword);
+        for (let i = 0; i < forms.length; i += batchSize) {
+            const batch = forms.slice(i, i + batchSize);
 
-            if (filteredProducts.length > 0) {
-                results.push({
-                    form: form,
-                    products: filteredProducts
-                });
-            }
+            // 배치 내에서 병렬로 상품 조회
+            const batchResults = await Promise.all(
+                batch.map(async (form) => {
+                    const products = await fetchProducts(form);
+                    const filteredProducts = filterProducts(products, productKeyword);
+
+                    if (filteredProducts.length > 0) {
+                        return {
+                            form: form,
+                            products: filteredProducts
+                        };
+                    }
+                    return null;
+                })
+            );
+
+            // null이 아닌 결과만 추가
+            results.push(...batchResults.filter(r => r !== null));
+
+            // 진행상황 표시
+            resultsContent.innerHTML = `<div class="loading">상품 조회 중... (${Math.min(i + batchSize, forms.length)}/${forms.length})</div>`;
         }
 
         // 3단계: 결과 표시
