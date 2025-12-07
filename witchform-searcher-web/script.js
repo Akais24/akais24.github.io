@@ -35,30 +35,34 @@ async function fetchProducts(form) {
         const products = [];
         const productSet = new Set();
 
-        // 정규식으로 상품명과 가격 추출
-        const nameRegex = /<div class="name">(.*?)<\/div>/g;
-        const priceRegex = /<div class="price">(.*?)<\/div>/;
+        // input 태그의 data-goods-* 속성에서 상품 정보 추출
+        const inputRegex = /<input[^>]*data-goods-name="([^"]*)"[^>]*data-goods-price="([^"]*)"[^>]*data-goods-img="([^"]*)"[^>]*>/g;
 
-        let nameMatch;
-        while ((nameMatch = nameRegex.exec(html)) !== null) {
-            const name = nameMatch[1];
-            const afterName = html.substring(nameMatch.index + nameMatch[0].length);
-            const priceMatch = priceRegex.exec(afterName);
+        let match;
+        while ((match = inputRegex.exec(html)) !== null) {
+            const name = match[1];
+            const price = match[2];
+            let image = match[3];
 
-            if (priceMatch) {
-                const price = priceMatch[1];
-                const product = `${name} (${price})`;
+            // 이미지 URL이 //로 시작하면 https: 추가
+            if (image.startsWith('//')) {
+                image = 'https:' + image;
+            }
 
-                if (!productSet.has(product)) {
-                    productSet.add(product);
-                    products.push({
-                        name: name,
-                        price: price,
-                        full: product
-                    });
-                }
+            const product = `${name} (${price})`;
+
+            if (!productSet.has(product)) {
+                productSet.add(product);
+                products.push({
+                    name: name,
+                    price: price,
+                    image: image,
+                    full: product
+                });
             }
         }
+
+        console.log(`폼 ${form.title}: ${products.length}개 상품 추출 완료`);
 
         return products;
     } catch (error) {
@@ -208,8 +212,11 @@ document.getElementById('searchForm').addEventListener('submit', async function(
                             <h4>검색된 상품 (${result.products.length}개)</h4>
                             ${result.products.map(product => `
                                 <div class="product-item">
-                                    <span class="product-name">${product.name}</span>
-                                    <span class="product-price">${product.price}</span>
+                                    ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-image">` : ''}
+                                    <div class="product-info">
+                                        <span class="product-name">${product.name}</span>
+                                        <span class="product-price">${product.price}</span>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
