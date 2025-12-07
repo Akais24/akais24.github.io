@@ -21,6 +21,51 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.info-box {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.info-box h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.25rem;
+    color: white;
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.info-box a {
+    color: white;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.info-box a:hover {
+    opacity: 0.8;
+}
+
+.info-box.warning {
+    background: rgba(255, 220, 150, 0.2);
+    border: 2px solid rgba(255, 200, 100, 0.4);
+}
+
 form {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
