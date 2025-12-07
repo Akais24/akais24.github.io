@@ -115,7 +115,8 @@ async function searchForms(keyword) {
                     title: item.formTitle,
                     formType: item.formType,
                     formUuid: item.formUuid,
-                    formIdx: item.formIdx
+                    formIdx: item.formIdx,
+                    thumbnail: item.thumbnail || item.formThumbnail || ''
                 });
             }
 
@@ -192,21 +193,29 @@ document.getElementById('searchForm').addEventListener('submit', async function(
         if (results.length === 0) {
             resultsContent.innerHTML = '<div class="loading">검색된 상품이 없습니다.</div>';
         } else {
-            resultsContent.innerHTML = results.map(result => `
-                <div class="form-item">
-                    <h3>${result.form.title}</h3>
-                    <p class="form-meta">타입: ${result.form.formType}</p>
-                    <div class="products-list">
-                        <h4>검색된 상품 (${result.products.length}개)</h4>
-                        ${result.products.map(product => `
-                            <div class="product-item">
-                                <span class="product-name">${product.name}</span>
-                                <span class="product-price">${product.price}</span>
+            resultsContent.innerHTML = results.map(result => {
+                const formURL = getFormURL(result.form);
+                return `
+                    <div class="form-item">
+                        <div class="form-header">
+                            ${result.form.thumbnail ? `<img src="${result.form.thumbnail}" alt="${result.form.title}" class="form-thumbnail">` : ''}
+                            <div class="form-title-section">
+                                <h3><a href="${formURL}" target="_blank" rel="noopener noreferrer">${result.form.title}</a></h3>
+                                <p class="form-meta">타입: ${result.form.formType}</p>
                             </div>
-                        `).join('')}
+                        </div>
+                        <div class="products-list">
+                            <h4>검색된 상품 (${result.products.length}개)</h4>
+                            ${result.products.map(product => `
+                                <div class="product-item">
+                                    <span class="product-name">${product.name}</span>
+                                    <span class="product-price">${product.price}</span>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         console.log('최종 결과:', results);

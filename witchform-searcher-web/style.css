@@ -151,10 +151,39 @@ button:active {
     margin-bottom: 0;
 }
 
+.form-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+}
+
+.form-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    flex-shrink: 0;
+}
+
+.form-title-section {
+    flex: 1;
+}
+
 .form-item h3 {
     margin: 0 0 0.5rem 0;
     font-size: 1.2rem;
+}
+
+.form-item h3 a {
     color: #764ba2;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.form-item h3 a:hover {
+    color: #5a3a7f;
+    text-decoration: underline;
 }
 
 .form-item p {
@@ -166,7 +195,7 @@ button:active {
 .form-meta {
     font-size: 0.85rem;
     color: #999;
-    margin-bottom: 1rem;
+    margin: 0;
 }
 
 .products-list {
