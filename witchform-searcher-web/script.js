@@ -5,6 +5,75 @@ function buildURL(baseURL, params) {
     return url.toString();
 }
 
+// 폼 URL 생성
+function getFormURL(form) {
+    switch (form.formType) {
+        case 'payform':
+            return buildURL('https://witchform.com/formViewer/payform.php', {
+                uuid: form.formUuid
+            });
+        case 'deposit':
+            return buildURL('https://witchform.com/formViewer/slim.php', {
+                idx: form.formIdx.toString()
+            });
+        default:
+            throw new Error(`Unknown form type: ${form.formType}`);
+    }
+}
+
+// 폼에서 상품 조회
+async function fetchProducts(form) {
+    try {
+        const url = getFormURL(form);
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const html = await response.text();
+        const products = [];
+        const productSet = new Set();
+
+        // 정규식으로 상품명과 가격 추출
+        const nameRegex = /<div class="name">(.*?)<\/div>/g;
+        const priceRegex = /<div class="price">(.*?)<\/div>/;
+
+        let nameMatch;
+        while ((nameMatch = nameRegex.exec(html)) !== null) {
+            const name = nameMatch[1];
+            const afterName = html.substring(nameMatch.index + nameMatch[0].length);
+            const priceMatch = priceRegex.exec(afterName);
+
+            if (priceMatch) {
+                const price = priceMatch[1];
+                const product = `${name} (${price})`;
+
+                if (!productSet.has(product)) {
+                    productSet.add(product);
+                    products.push({
+                        name: name,
+                        price: price,
+                        full: product
+                    });
+                }
+            }
+        }
+
+        return products;
+    } catch (error) {
+        console.error(`폼 ${form.title}에서 상품 조회 실패:`, error);
+        return [];
+    }
+}
+
+// 상품 필터링
+function filterProducts(products, keyword) {
+    return products.filter(product =>
+        product.name.includes(keyword) || product.full.includes(keyword)
+    );
+}
+
 // Witchform API 검색
 async function searchForms(keyword) {
     const forms = [];
@@ -78,25 +147,54 @@ document.getElementById('searchForm').addEventListener('submit', async function(
     resultsContent.innerHTML = '<div class="loading">검색 중...</div>';
 
     try {
-        // 검색 시작
+        // 1단계: 폼 검색
+        resultsContent.innerHTML = '<div class="loading">폼 검색 중...</div>';
         const forms = await searchForms(formTitle);
-        console.log('검색 결과:', forms);
+        console.log('검색된 폼:', forms);
 
-        // 결과 표시
         if (forms.length === 0) {
             resultsContent.innerHTML = '<div class="loading">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        // 2단계: 각 폼에서 상품 조회 및 필터링
+        resultsContent.innerHTML = '<div class="loading">상품 조회 중...</div>';
+        const results = [];
+
+        for (const form of forms) {
+            const products = await fetchProducts(form);
+            const filteredProducts = filterProducts(products, productKeyword);
+
+            if (filteredProducts.length > 0) {
+                results.push({
+                    form: form,
+                    products: filteredProducts
+                });
+            }
+        }
+
+        // 3단계: 결과 표시
+        if (results.length === 0) {
+            resultsContent.innerHTML = '<div class="loading">검색된 상품이 없습니다.</div>';
         } else {
-            resultsContent.innerHTML = forms.map(form => `
+            resultsContent.innerHTML = results.map(result => `
                 <div class="form-item">
-                    <h3>${form.title}</h3>
-                    <p>타입: ${form.formType}</p>
-                    <p>UUID: ${form.formUuid}</p>
-                    <p>Index: ${form.formIdx}</p>
+                    <h3>${result.form.title}</h3>
+                    <p class="form-meta">타입: ${result.form.formType}</p>
+                    <div class="products-list">
+                        <h4>검색된 상품 (${result.products.length}개)</h4>
+                        ${result.products.map(product => `
+                            <div class="product-item">
+                                <span class="product-name">${product.name}</span>
+                                <span class="product-price">${product.price}</span>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             `).join('');
         }
 
-        // TODO: 각 폼에서 상품 검색 로직 추가
+        console.log('최종 결과:', results);
     } catch (error) {
         resultsContent.innerHTML = `<div class="loading">오류: ${error.message}</div>`;
         console.error('검색 중 오류:', error);

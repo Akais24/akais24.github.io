@@ -163,6 +163,51 @@ button:active {
     color: #666;
 }
 
+.form-meta {
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.products-list {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+}
+
+.products-list h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    color: #555;
+}
+
+.product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: rgba(118, 75, 162, 0.05);
+    border-radius: 0.25rem;
+}
+
+.product-item:last-child {
+    margin-bottom: 0;
+}
+
+.product-name {
+    font-size: 0.95rem;
+    color: #333;
+    flex: 1;
+}
+
+.product-price {
+    font-size: 0.9rem;
+    color: #764ba2;
+    font-weight: 600;
+    margin-left: 1rem;
+}
+
 .loading {
     text-align: center;
     color: white;
