@@ -1,53 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Witchform Searcher</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- AWS Amplify를 이용한 정적 서빙을 채택하면서 변경: 새로운 주소로 리다이렉트 -->
+    <meta http-equiv="refresh" content="0; url=https://main.dfms4700xuem5.amplifyapp.com/">
+    <script>window.location.href="https://main.dfms4700xuem5.amplifyapp.com/";</script>
 </head>
-
-<body>
-    <div class="container">
-        <h1>Witchform Searcher</h1>
-
-        <div class="info-section">
-            <div class="info-box">
-                <p>
-                    이 사이트에서는
-                    <a href="https://witchform.com" target="_blank" rel="noopener noreferrer">윗치폼</a>
-                    에서 제공하는 폼의 상품을 검색할 수 있습니다
-                </p>
-            </div>
-
-            <div class="info-box warning">
-                <h3>주의사항</h3>
-                <p>- 개인 개정으로 검색하지 않으면 나오지 않는 폼(ex. 성인 인증이 필요한 폼)은 현재로서 검색(접근)이 불가능합니다</p>
-            </div>
-        </div>
-
-        <form id="searchForm">
-            <div class="form-group">
-                <label for="formTitle">폼 제목 키워드</label>
-                <input type="text" id="formTitle" name="formTitle" placeholder="ex. 트릭컬" required>
-            </div>
-
-            <div class="form-group">
-                <label for="productKeyword">상품 키워드</label>
-                <input type="text" id="productKeyword" name="productKeyword" placeholder="ex. 죠안" required>
-            </div>
-
-            <button type="submit">검색</button>
-        </form>
-
-        <div id="resultsSection" class="results-section" style="display: none;">
-            <h2>검색 결과</h2>
-            <div id="resultsContent"></div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-
 </html>
