@@ -22,8 +22,28 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Setup SSH for submodule
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SUBMODULE_DEPLOY_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          ssh-key: ${{ secrets.SUBMODULE_DEPLOY_KEY }}
+
+      - name: Copy submodule src to witchform-searcher-web
+        run: |
+          if [ -d "witchform-searcher-web/src" ]; then
+            rm -rf witchform-searcher-web-temp
+            cp -r witchform-searcher-web/src witchform-searcher-web-temp
+            rm -rf witchform-searcher-web
+            mv witchform-searcher-web-temp witchform-searcher-web
+            echo "Copied src contents to witchform-searcher-web/"
+          else
+            echo "No src directory found in submodule"
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -1,0 +1,3 @@
+[submodule "witchform-searcher-web"]
+	path = witchform-searcher-web
+	url = git@github.com:Akais24/witchform-searcher-web.git
