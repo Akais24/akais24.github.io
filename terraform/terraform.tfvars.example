@@ -1,0 +1,19 @@
+# AWS 설정
+aws_profile = "jaeyoung"
+
+# GitHub 설정
+# Fine-grained Personal Access Token
+# 생성: GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
+# 필요 권한:
+#   - Administration: Read and write (Deploy keys 관리)
+#   - Secrets: Read and write (Actions secrets 관리)
+#   - Contents: Read-only
+#   - Metadata: Read-only
+# 주의: Token이 만료되면 terraform apply 시 갱신 필요
+github_token = "ghp_your_github_token_here"
+
+# Deploy Key Public Key
+# SSH 키 생성: ssh-keygen -t ed25519 -f ~/.ssh/github_pages_deploy_key -N "" -C "github-pages-deploy"
+deploy_key_public = <<-EOT
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExamplePublicKeyContentHere
+EOT
