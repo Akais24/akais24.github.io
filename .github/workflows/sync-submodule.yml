@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -29,8 +30,11 @@ jobs:
           submodules: false
 
       - name: Compare and update submodule
+        id: sync_submodule
         run: |
           set -euo pipefail
+
+          echo "changed=false" >> "$GITHUB_OUTPUT"
 
           SUBMODULE_PATH="witchform-searcher-web"
           SUBMODULE_REMOTE="git@github.com:Akais24/witchform-searcher-web.git"
@@ -71,3 +75,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(submodule): bump witchform-searcher-web to ${NEW_SHA:0:7}"
           git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger deploy workflow
+        if: steps.sync_submodule.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: "deploy.yml",
+              ref: "main"
+            });
