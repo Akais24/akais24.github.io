@@ -1,0 +1,73 @@
+name: Sync submodule from remote main
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-submodule
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH for submodule access
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SUBMODULE_DEPLOY_KEY }}
+
+      - name: Checkout super repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Compare and update submodule
+        run: |
+          set -euo pipefail
+
+          SUBMODULE_PATH="witchform-searcher-web"
+          SUBMODULE_REMOTE="git@github.com:Akais24/witchform-searcher-web.git"
+          TARGET_REF="refs/heads/main"
+
+          CURRENT_SHA="$(git ls-tree HEAD "${SUBMODULE_PATH}" | awk '{print $3}')"
+          REMOTE_SHA="$(git ls-remote "${SUBMODULE_REMOTE}" "${TARGET_REF}" | awk '{print $1}')"
+
+          echo "Current: ${CURRENT_SHA}"
+          echo "Remote : ${REMOTE_SHA}"
+
+          if [ -z "${REMOTE_SHA}" ]; then
+            echo "Failed to read remote SHA"
+            exit 1
+          fi
+
+          if [ "${CURRENT_SHA}" = "${REMOTE_SHA}" ]; then
+            echo "Submodule already up to date."
+            exit 0
+          fi
+
+          git submodule update --init --remote "${SUBMODULE_PATH}"
+
+          NEW_SHA="$(git -C "${SUBMODULE_PATH}" rev-parse HEAD)"
+          if [ "${NEW_SHA}" != "${REMOTE_SHA}" ]; then
+            echo "Resolved submodule SHA (${NEW_SHA}) != remote SHA (${REMOTE_SHA})"
+            exit 1
+          fi
+
+          git add "${SUBMODULE_PATH}"
+
+          if git diff --cached --quiet; then
+            echo "No staged changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(submodule): bump witchform-searcher-web to ${NEW_SHA:0:7}"
+          git push origin HEAD:main
